@@ -5,17 +5,36 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  FlatList,
 } from "react-native";
 
 import { FontAwesome } from "@expo/vector-icons";
 
-const [taskName, setTaskName] = useState("");
-
-function handleAddingTask() {
-  alert(taskName);
-}
+import { Task } from "./src/Task";
 
 export default function App() {
+  const [taskName, setTaskName] = useState("");
+  const [taskList, setTaskList] = useState([]);
+
+  function handleAddingTask() {
+    if (taskName === "") {
+      return;
+    }
+
+    const task = {
+      id: Date.now(),
+      name: taskName,
+    };
+
+    setTaskList([task, ...taskList]);
+    setTaskName("");
+  }
+
+  function handleDeleteTask(taskId) {
+    const newTasks = taskList.filter((task) => task.id !== taskId);
+    setTaskList(newTasks);
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Tarefas</Text>
@@ -26,6 +45,7 @@ export default function App() {
           value={taskName}
           onChangeText={(text) => setTaskName(text)}
         />
+
         <TouchableOpacity
           style={styles.addTaskButton}
           onPress={handleAddingTask}
@@ -33,6 +53,15 @@ export default function App() {
           <FontAwesome name="plus" size={20} color="#FFF" />
         </TouchableOpacity>
       </View>
+
+      <FlatList
+        data={taskList}
+        keyExtractor={(item) => item.id}
+        renderItem={({ item }) => (
+          <Task task={item} deleteTask={() => handleDeleteTask(item.id)} />
+        )}
+        style={styles.list}
+      />
     </View>
   );
 }
@@ -74,5 +103,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     borderRadius: 4,
+  },
+  list: {
+    flex: 1,
+    backgroundColor: "#FFF",
+    paddingHorizontal: "4%",
   },
 });
